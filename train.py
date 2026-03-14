@@ -65,8 +65,8 @@ def train_one_epoch(model, image_loader, mtf_loader, optimizer, scaler, l1_loss,
                 grid_size=512
             )
 
-            filt_s2sh = otf_sharp  / (otf_smooth.abs() + 1e-10)
-            filt_sh2s = otf_smooth.abs() / (otf_sharp.abs()  + 1e-10)
+            filt_s2sh = otf_sharp  / (otf_smooth + 1e-10)
+            filt_sh2s = otf_smooth/ (otf_sharp  + 1e-10)
 
             I_gen_sharp, I_gen_smooth = generate_images(
                 I_smooth=I_smooth_1,
@@ -80,7 +80,7 @@ def train_one_epoch(model, image_loader, mtf_loader, optimizer, scaler, l1_loss,
 
             knots_mtf, cp_mtf = model(input_profiles)
             pred_mtf = get_torch_spline(knots_mtf, cp_mtf, num_points=target_mtfs.shape[-1]).squeeze(1)
-            mtf_loss = l1_loss(pred_mtf, target_.mtfs)
+            mtf_loss = l1_loss(pred_mtf, target_mtfs)
 
             ft_loss = huber(
                 torch.log(I_smooth_fft.abs() + 1e-7) - torch.log(I_sharp_fft.abs() + 1e-7),
